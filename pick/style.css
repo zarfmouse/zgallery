@@ -1,0 +1,24 @@
+#picker li  {
+	display: inline-block; 
+	margin: 1px;
+	border: 1px solid yellow;
+	opacity:0.3;
+	width: 200px;
+	height: 150px;
+}
+
+#picker li:hover  {
+	border: 1px solid red;
+	opacity: 1;
+}
+
+#picker li.picked  {
+	border: 1px solid green;
+	opacity: 1;
+}
+
+#picker li img {
+    width: 200px;
+    height: 150px;
+}
+

@@ -1,0 +1,14 @@
+<Files ".gitignore">
+  Order Allow,Deny
+  Deny from all
+</Files>
+
+<Files "LICENSE">
+  Order Allow,Deny
+  Deny from all
+</Files>
+
+<Files "README.md">
+  Order Allow,Deny
+  Deny from all
+</Files>
