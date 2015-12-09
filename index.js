@@ -8,6 +8,11 @@ jQuery(function($){
 		    return false;
 		}
 	    });
+	    slides.forEach(function(slide) {
+		if("pass_id" in slide) {
+		    slide.url = "http://gopho.pass.us/the-embers/i-"+slide.pass_id;
+		}
+	    });
 	    $('head > title').text(slides_data.title);
             $.supersized({
                 slideshow:            1,      // Slideshow on/off
