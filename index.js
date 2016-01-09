@@ -1,4 +1,15 @@
 jQuery(function($){
+
+    // This hack replaces the deprecated/removed toggle() event in jQuery. 
+    // http://stackoverflow.com/a/25150375
+    $.fn.toggle=function(){
+        var functions=arguments, iteration=0
+        return this.click(function(){
+            functions[iteration].call()
+            iteration= (iteration+1) %functions.length
+        })
+    }
+
     $(document).ready(function() {
         $.getJSON('pick/rest.cgi', function(slides_data) {
             var slides = $.grep(slides_data.slides, function(o,i) {
