@@ -19,18 +19,23 @@ my $pass;
 my $credit;
 my $title;
 my $skip_mogrify = 0;
+my $author_subs = 0;
+my $DRY_RUN = 0;
+my $slug = 'Image';
 GetOptions(
     "help" => \$help,
     "verbose" => \$VERBOSE,
+    "dry-run" => \$DRY_RUN,
     "pass=s" => \$pass,
     "credit=s" => \$credit,
     "title=s" => \$title,
     "skip-mogrify" => $skip_mogrify,
+    "author-subs" => \$author_subs,
     );
 
 my $Usage = <<"USAGE";
 $0 [--help]
-$0 [--verbose] [--pass=FILENAME];
+$0 [--verbose] [--dry-run] [--pass=FILENAME] [--title=TITLE] [--credit=CREDIT --slug=STR | --author-subs] [--skip-mogrify] [--pass=FILENAME];
 USAGE
     ;
 
@@ -44,8 +49,11 @@ if(defined($pass)) {
 
 my $image_dir = "$RealBin/../images";
 -d $image_dir or die "$image_dir not found.";
+chdir($image_dir) or die "chdir($image_dir): $!";
+my $orig_dir = "$image_dir/orig";
+-d $orig_dir or die "$orig_dir not found";
 my $thumb_dir = "$image_dir/thumbs";
--d $thumb_dir or mkdir($thumb_dir, 0755) or die "mkdir($thumb_dir): $!";
+-d $thumb_dir or $DRY_RUN or mkdir($thumb_dir, 0755) or die "mkdir($thumb_dir): $!";
 
 my $slides_file = "$image_dir/slides.storable";
 my $slides = { slides => [] };
@@ -53,23 +61,55 @@ if(defined($title)) {
     $slides->{title} = $title;
 }
 
-foreach my $image (glob("$image_dir/*.jpg")) {
-    my $filename = basename($image);
-    my $dirname = dirname($image);
-    print "$image...\n";
 
-    my $thumb_file = "$thumb_dir/tn_$filename";
+
+my @files;
+if($author_subs) {
+    @files = glob("orig/*/*.[Jj][Pp]*[gG]");
+} else {
+    @files = glob("orig/*.[Jj][Pp]*[gG]");
+}
+
+my $i = 0;
+my $previous_dir = ''; 
+foreach my $image (@files) {
+    my $filename = basename($image);
+    print "$image...\n";
+    
+    if($author_subs) {
+	$credit = basename(dirname($image));
+	$credit =~ s/^[0-9]+_//;
+	$slug = $credit;
+	if($credit ne $previous_dir) {
+	    $previous_dir = $credit;
+	    $i=0;
+	}
+	$credit =~ s/_/ /g;
+    }
+    $i++;
+    my $target_filename = "$slug-".sprintf("%04i", $i).".jpg";
+
+    my $thumb_file = "$thumb_dir/tn_$target_filename";
+    my $image_file = "$image_dir/$target_filename";
     unless($skip_mogrify) {
-	copy($image, $thumb_file) or die "copy($image, $thumb_file): $!";
-	my $cmd = "mogrify -geometry 200x200^ -gravity Center -crop 200x150+0+0 +repage '$thumb_file'";
-	print "\t$cmd\n" if $VERBOSE;
-	system($cmd);
+	$DRY_RUN or copy($image, $image_file) or die "copy($image, $image_file): $!";
+	my $image_cmd = "mogrify -geometry 1500x1500 '$image_file'";
+	print "\t$image_cmd\n" if $VERBOSE;
+	$DRY_RUN or system($image_cmd);
+
+	$DRY_RUN or copy($image, $thumb_file) or die "copy($image, $thumb_file): $!";
+	my $thumb_cmd = "mogrify -geometry 200x200^ -gravity Center -crop 200x150+0+0 +repage '$thumb_file'";
+	print "\t$thumb_cmd\n" if $VERBOSE;
+	$DRY_RUN or system($thumb_cmd);
     } else {
+	-f $image_file or die "$image_file is missing";
 	-f $thumb_file or die "$thumb_file is missing";
     }
+
     my $slide = {
-	image => "images/$filename",
-	thumb => "images/thumbs/tn_$filename",
+	image => "images/$target_filename",
+	thumb => "images/thumbs/tn_$target_filename",
+	orig => $image,
 	active => 1,
     };
     push(@{$slides->{slides}}, $slide);
@@ -81,7 +121,7 @@ foreach my $image (glob("$image_dir/*.jpg")) {
 	$slide->{title} = "Credit: $credit";
     }
 }
-lock_store($slides => $slides_file);
+$DRY_RUN or lock_store($slides => $slides_file);
 print Dumper($slides);
 __END__
 
