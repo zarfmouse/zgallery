@@ -25,9 +25,16 @@ jQuery(function($){
 
 	    $('head > title').text(slides_data.title);
 
+	    var index_hash = {};
+	    var i = 1;
+	    slides.forEach(function(slide) {
+		index_hash[slide.image.replace(/^images\//, '')] = i++;
+	    });
+
 	    function parse_hash() {
 		if(typeof location.hash !== 'undefined') {
-		    var retval = parseInt(location.hash.substr(1));
+		    var image = location.hash.substr(1);
+		    var retval = index_hash[image];
 		    if(retval >= 1 && retval <= slides.length) {
 			return retval;
 		    }
@@ -64,7 +71,7 @@ jQuery(function($){
                 mouse_scrub:          0
             });
 	    function initialize_slide(slide) {
-		location.hash = '#'+(vars.current_slide+1);
+		location.hash = '#'+slide.image.replace(/^images\//, '');
 		if("pass_id" in slide) {
 		    var url = "http://gopho.pass.us/the-embers/i-"+slide.pass_id;
 		    $("#slidebuy a").attr('href', url);
