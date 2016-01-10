@@ -79,8 +79,8 @@ jQuery(function($){
 		    $("#slidebuy").hide();
 		}		
 
-		if("fburl" in slide) {
-		    $("#slidefb a").attr('href', slide.fburl);
+		if("fb_url" in slide) {
+		    $("#slidefb a").attr('href', slide.fb_url);
 		    $("#slidefb").show();
 		} else {
 		    $("#slidefb").hide();
