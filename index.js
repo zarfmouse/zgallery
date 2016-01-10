@@ -12,6 +12,7 @@ jQuery(function($){
 
     $(document).ready(function() {
 	$("#slidebuy").hide();
+	$("#slidefb").hide();
 
         $.getJSON('pick/rest.cgi', function(slides_data) {
             var slides = $.grep(slides_data.slides, function(o,i) {
@@ -70,6 +71,13 @@ jQuery(function($){
 		    $("#slidebuy").show();
 		} else {
 		    $("#slidebuy").hide();
+		}		
+
+		if("fburl" in slide) {
+		    $("#slidefb a").attr('href', slide.fburl);
+		    $("#slidefb").show();
+		} else {
+		    $("#slidefb").hide();
 		}		
 	    }
 	    initialize_slide(slides[vars.current_slide]);	    
