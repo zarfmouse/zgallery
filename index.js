@@ -11,6 +11,8 @@ jQuery(function($){
     }
 
     $(document).ready(function() {
+	$("#slidebuy").hide();
+
         $.getJSON('pick/rest.cgi', function(slides_data) {
             var slides = $.grep(slides_data.slides, function(o,i) {
 		if(o.active) {
@@ -19,11 +21,7 @@ jQuery(function($){
 		    return false;
 		}
 	    });
-	    slides.forEach(function(slide) {
-		if("pass_id" in slide) {
-		    slide.url = "http://gopho.pass.us/the-embers/i-"+slide.pass_id;
-		}
-	    });
+
 	    $('head > title').text(slides_data.title);
 
 	    function parse_hash() {
@@ -38,13 +36,13 @@ jQuery(function($){
 
             $.supersized({
                 slideshow:            1,      // Slideshow on/off
-                autoplay:             0,      // Slideshow starts playing automatically
+                autoplay:             1,      // Slideshow starts playing automatically
                 start_slide:          parse_hash(), // Start slide (0 is random)
                 stop_loop:            0,      // Pauses slideshow on last slide
                 random:               0,      // Randomize slide order (Ignores start slide)
-                slide_interval:       3000,   // Length between transitions
+                slide_interval:       4000,   // Length between transitions
                 transition:           1,      // 0-None, 1-Fade, 2-Slide Top, 3-Slide Right, 4-Slide Bottom, 5-Slide Left, 6-Carousel Right, 7-Carousel Left
-                transition_speed:     1000,   // Speed of transition
+                transition_speed:     750,   // Speed of transition
                 new_window:           1,      // Image links open in new window/tab
                 pause_hover:          0,      // Pause slideshow on hover
                 keyboard_nav:         1,      // Keyboard navigation on/off
@@ -64,7 +62,17 @@ jQuery(function($){
                 progress_bar:         0,      // Timer for each slide                                                   
                 mouse_scrub:          0
             });
-
+	    function initialize_slide(slide) {
+		location.hash = '#'+(vars.current_slide+1);
+		if("pass_id" in slide) {
+		    var url = "http://gopho.pass.us/the-embers/i-"+slide.pass_id;
+		    $("#slidebuy a").attr('href', url);
+		    $("#slidebuy").show();
+		} else {
+		    $("#slidebuy").hide();
+		}		
+	    }
+	    initialize_slide(slides[vars.current_slide]);	    
 	    $(window).on('hashchange', function() {
 		// slide_start above, api.goTo(), and our
 		// location.hash are all 1-indexed, but
@@ -77,7 +85,7 @@ jQuery(function($){
 	    var old_theme_afterAnimation = theme.afterAnimation;
 	    theme.afterAnimation = function() {
 		old_theme_afterAnimation();
-		location.hash = '#'+(vars.current_slide+1);
+		initialize_slide(slides[vars.current_slide]);
 	    }
 	    
         });
