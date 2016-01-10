@@ -72,9 +72,8 @@ jQuery(function($){
             });
 	    function initialize_slide(slide) {
 		location.hash = '#'+slide.image.replace(/^images\//, '');
-		if("pass_id" in slide) {
-		    var url = "http://gopho.pass.us/the-embers/i-"+slide.pass_id;
-		    $("#slidebuy a").attr('href', url);
+		if("buy_url" in slide) {
+		    $("#slidebuy a").attr('href', slide.buy_url);
 		    $("#slidebuy").show();
 		} else {
 		    $("#slidebuy").hide();
