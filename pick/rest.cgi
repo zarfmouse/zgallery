@@ -36,9 +36,14 @@ eval {
 	    my $i = $cgi->param('index');
 	    my $data = lock_retrieve($data_file);
 	    my $root = "$RealBin/..";
-	    my $orig_file = "$root/images/$data->{slides}->[$i]->{orig}";
+	    my $orig_file;
 	    my $image_file = "$root/$data->{slides}->[$i]->{image}";
 	    my $thumb_file = "$root/$data->{slides}->[$i]->{thumb}";
+	    if(defined($data->{slides}->[$i]->{orig})) {
+		$orig_file = "$root/images/$data->{slides}->[$i]->{orig}";
+	    } else {
+		$orig_file = $image_file;
+	    }
 	    my $deg = 90;
 	    if($dir eq 'left') {
 		$deg = -90;
