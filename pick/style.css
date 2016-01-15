@@ -1,24 +1,95 @@
-#picker li  {
-	display: inline-block; 
-	margin: 1px;
-	border: 1px solid yellow;
-	opacity:0.3;
-	width: 200px;
-	height: 150px;
+#picker {
+    padding: 0;
 }
 
-#picker li:hover  {
+#picker > li  {
+	display: inline-block; 
+	margin: 1px;
+	margin-top: -25px;
+	width: 200px;
+	height: 150px;
+	border: 1px solid yellow;
+	opacity:0.3;
+	position: relative;
+}
+
+#picker > li:hover  {
 	border: 1px solid red;
 	opacity: 1;
 }
 
-#picker li.picked  {
+#picker > li.picked {
 	border: 1px solid green;
 	opacity: 1;
 }
 
-#picker li img {
+#picker > li > img {
     width: 200px;
     height: 150px;
+    display: block;
+    padding: 0;
+    margin: 0;
 }
 
+#picker > li > .spinner {
+    width: 200px;
+    height: 150px;
+    display: block;
+    padding: 0;
+    margin: 0;
+    position: absolute;
+    text-align: center;
+    line-height: 150px;
+    vertical-align: middle;
+    top: 0;
+    left: 0;
+    color: white;
+    background-color: rgba(0,0,0, 0.8);
+}
+
+#picker > li > ul.controls {
+    padding: 0;
+    height: 30px;
+    position: relative;
+    top: -35px;
+    background-color: rgba(128, 128, 128, 0.5);
+}
+
+#picker > li > ul.controls > li {
+	display: inline-block; 
+	margin: 2px;
+	font-size: 22px;
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	color: white;
+	text-align: center;
+	padding: 2px;
+}
+
+#picker > li > ul.controls > li:hover {
+    cursor: pointer;
+    text-shadow: 2px 2px #bbbbbb;
+}
+
+#picker > li > ul.controls > li.rotate.right {
+    float: right;
+}
+
+#picker > li > ul.controls > li.checked {
+    display: none;
+    margin-left: 64px;
+}
+
+#picker > li > ul.controls > li.unchecked {
+    display: inline-block;
+    margin-left: 64px;
+}
+
+#picker > li.picked > ul.controls > li.checked {
+    display: inline-block;
+}
+
+#picker > li.picked > ul.controls > li.unchecked {
+    display: none;
+}
