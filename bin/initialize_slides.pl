@@ -93,7 +93,7 @@ foreach my $image (@files) {
     my $image_file = "$image_dir/$target_filename";
     unless($skip_mogrify) {
 	$DRY_RUN or copy($image, $image_file) or die "copy($image, $image_file): $!";
-	my $image_cmd = "mogrify -geometry 1500x1500 '$image_file'";
+	my $image_cmd = "mogrify -geometry '1500x1500>' '$image_file'";
 	print "\t$image_cmd\n" if $VERBOSE;
 	$DRY_RUN or system($image_cmd);
 
