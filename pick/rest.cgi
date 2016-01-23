@@ -29,7 +29,24 @@ my $cgi = CGI->new();
 
 eval {
     my $mode = $cgi->param('mode');
-    if($mode eq 'rotate') {
+    if($mode eq 'tags') {
+	read_lock();
+	my $q = $cgi->param('q');
+	my $data = lock_retrieve($data_file);
+	my %tags;
+	foreach my $slide (@{$data->{slides}}) {
+	    if(exists($slide->{tags})) {
+		foreach my $tag (@{$slide->{tags}}) {
+		    if((not defined($q)) or $tag =~ m/^\Q$q/) {
+			$tags{$tag} = 1;
+		    }
+		}
+	    }
+	}
+ 	my $json = encode_json([ sort keys %tags ]);
+	print $cgi->header("appliation/json");
+	print $json;
+    } elsif($mode eq 'rotate') {
 	write_lock();
 	if($cgi->param('password') eq $password) {
 	    my $dir = $cgi->param('direction');
@@ -63,6 +80,7 @@ eval {
 	my $data = decode_json($json);
 	if($data->{password} eq $password) {
 	    delete $data->{password};
+	    delete $data->{availableTags};
 	    lock_store($data => $data_file);
 	    print $cgi->header("appliation/json");
 	    print $json;
@@ -72,6 +90,15 @@ eval {
     } else {
 	read_lock();
 	my $data = lock_retrieve($data_file);
+	my %tags;
+	foreach my $slide (@{$data->{slides}}) {
+	    if(exists($slide->{tags})) {
+		foreach my $tag (@{$slide->{tags}}) {
+		    $tags{$tag} = 1;
+		}
+	    }
+	}
+	$data->{availableTags} = [ sort keys %tags ];
 	my $json = encode_json($data);
 	print $cgi->header("appliation/json");
 	print $json;

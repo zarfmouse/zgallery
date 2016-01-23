@@ -13,9 +13,40 @@ jQuery(function($){
 		if(v.active) {
 		    el.addClass('picked');
 		}
-		el.append($('<ul class="controls"><li class="rotate left"><i class="fa fa-rotate-left" /></li><li class="checked"><i class="fa fa-check-square-o" /></li><li class="unchecked"><i class="fa fa-square-o" /></li><li class="rotate right"><i class="fa fa-rotate-right" /></li></ul>'));
+		
+		var existing_tags = [];
+		if("tags" in v) {
+		    existing_tags = v.tags.map(function(x) {
+			return { tag: x };
+		    });
+		}
+		var tags = $(Mustache.render('<ul class="tags">{{#tags}}<li>{{tag}}</li>{{/tags}}</ul>', { tags: existing_tags }));
+		function store_tags(ev,ui) {
+		    if(!ui.duringInitialization) {
+			v.tags = tags.tagit("assignedTags");
+			changes = true;
+		    }
+		}
+		tags.tagit({
+		    afterTagAdded: store_tags,
+		    afterTagRemoved: store_tags,
+		    autocomplete: {
+			source: function(request, response) {
+			    $.getJSON("rest.cgi?mode=tags&q="+encodeURI(request.term), function(data) {
+				response(data);
+			    })
+			}
+		    }
+		});
+		el.append(tags);
+		el.append($('<ul class="controls"><li class="rotate left"><i class="fa fa-rotate-left" /></li><li class="checked"><i class="fa fa-check-square-o" /></li><li class="unchecked"><i class="fa fa-square-o" /></li><li class="tag-toggle"><i class="fa fa-tag" /></li><li class="rotate right"><i class="fa fa-rotate-right" /></li></ul>'));
 		$('#picker').append(el);
 		$('.spinner').hide();
+	    });
+
+	    $('#picker > li .controls .tag-toggle').click(function(ev) {
+		ev.stopPropagation();
+		$(this).parents("#picker > li").children(".tags").toggleClass('visible');
 	    });
 
 	    $('#picker > li .rotate').click(function(ev) {
@@ -24,7 +55,7 @@ jQuery(function($){
 		if($(this).hasClass('right')) {
 		    dir = 'right';
 		}
-
+		    
 		var i = $(this).parents("#picker > li").data("index");
 		var url = "rest.cgi?mode=rotate&direction="+dir+"&index="+i+"&password="+password;
 		var img = $(this).parents("#picker > li").children("img.thumb");
@@ -41,18 +72,32 @@ jQuery(function($){
 	    });
 
 	    $('#picker > li').click(function(ev) {
-		$(this).toggleClass('picked');
-		if($(this).hasClass('picked')) {
-		    slides_data.slides[$(this).data("index")].active = 1;
-		} else {
-		    slides_data.slides[$(this).data("index")].active = undefined;
-		}
-		changes = true;
+		var tags = $(this).children(".tags");
+		if($(ev.target).parents(".tags").length == 0) {
+		    $(this).toggleClass('picked');
+		    if($(this).hasClass('picked')) {
+			slides_data.slides[$(this).data("index")].active = 1;
+		    } else {
+			slides_data.slides[$(this).data("index")].active = undefined;
+		    }
+		    changes = true;
+		} 
 		return false;
 	    });
 
 	    $('#picker li').dblclick(function(ev) {
 		window.open($(this).data("fullsize"), '_blank');
+	    });
+
+	    var show_all = true;
+	    $("#toggle-all-tags").click(function(ev) {
+		if(show_all) {
+		    $(".tags").addClass('visible');
+		    show_all = false;
+		} else {
+		    $(".tags").removeClass('visible');
+		    show_all = true;
+		}
 	    });
 
 	    var running = false;

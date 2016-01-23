@@ -1,5 +1,7 @@
 #picker {
     padding: 0;
+    margin-top: 27px;
+    margin-right: 3em;
 }
 
 #picker > li  {
@@ -67,7 +69,8 @@
 	padding: 2px;
 }
 
-#picker > li > ul.controls > li:hover {
+#picker > li > ul.controls > li:hover,
+#toggle-all-tags:hover {
     cursor: pointer;
     text-shadow: 2px 2px #bbbbbb;
 }
@@ -92,4 +95,26 @@
 
 #picker > li.picked > ul.controls > li.unchecked {
     display: none;
+}
+
+.tags {
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 8px;
+    display: none;
+}
+
+.tags.visible {
+    display: block;
+}
+
+.tagit-autocomplete .ui-menu-item {
+    font-size: 8px;
+}
+
+#toggle-all-tags {
+    position: fixed; 
+    top: 5px;
+    right: 5px;
 }
