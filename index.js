@@ -13,11 +13,33 @@ jQuery(function($){
     $(document).ready(function() {
 	$("#slidebuy").hide();
 	$("#slidefb").hide();
+	
 
-        $.getJSON('pick/rest.cgi', function(slides_data) {
+	var query = URI(location).search(true);
+	$.getJSON('pick/rest.cgi', function(slides_data) {
             var slides = $.grep(slides_data.slides, function(o,i) {
 		if(o.active) {
-		    return true;
+		    if("t" in query) {
+			if("tags" in o && o.tags.length > 0) {
+			    if(typeof(query.t) === 'string') {
+				if($.inArray(query.t, o.tags) >= 0) {
+				    return true;
+				} else {
+				    return false;
+				}
+			    } else {
+				var retval = true;
+				$.each(query.t, function(k,v) {
+				    retval = retval && $.inArray(v, o.tags) >= 0;
+				});
+				return retval;
+			    }
+			} else {
+			    return false;
+			}
+		    } else {
+			return true;
+		    }
 		} else {
 		    return false;
 		}
