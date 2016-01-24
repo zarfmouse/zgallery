@@ -16,26 +16,29 @@ use Getopt::Long qw(GetOptions);
 my $help = 0;
 my $VERBOSE = 0;
 my $DRY_RUN = 0;
+my $collection;
 GetOptions(
     "help" => \$help,
     "verbose" => \$VERBOSE,
     "dry_run" => \$DRY_RUN,
+    "collection=s" => $collection,
     );
 my $filename = shift;
 
 my $Usage = <<"USAGE";
 $0 [--help]
-$0 [--verbose] [--dry-run] FILENAME
+$0 [--verbose] [--dry-run] --collection=NAME FILENAME
 USAGE
     ;
 
 $help and die $Usage;
+defined($collection) or die "--collection is required.\n$Usage";
 (defined($filename) && -f $filename) or die $Usage; 
 
 my @fb_ids; 
 @fb_ids = map {chomp; $_;} IO::File->new($filename)->getlines();
 
-my $image_dir = "$RealBin/../images";
+my $image_dir = "$RealBin/../images/$collection";
 -d $image_dir or die "$image_dir not found.";
 
 my $slides_file = "$image_dir/slides.storable";

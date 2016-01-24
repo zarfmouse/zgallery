@@ -20,6 +20,7 @@ my $credit;
 my $title;
 my $skip_mogrify = 0;
 my $author_subs = 0;
+my $collection;
 my $DRY_RUN = 0;
 my $slug = 'Image';
 GetOptions(
@@ -31,15 +32,17 @@ GetOptions(
     "title=s" => \$title,
     "skip-mogrify" => $skip_mogrify,
     "author-subs" => \$author_subs,
+    "collection=s" => \$collection,
     );
 
 my $Usage = <<"USAGE";
 $0 [--help]
-$0 [--verbose] [--dry-run] [--pass=FILENAME] [--title=TITLE] [--credit=CREDIT --slug=STR | --author-subs] [--skip-mogrify] [--pass=FILENAME];
+$0 [--verbose] [--dry-run] [--pass=FILENAME] [--title=TITLE] [--credit=CREDIT --slug=STR | --author-subs] [--skip-mogrify] [--pass=FILENAME] --collection=NAME;
 USAGE
     ;
 
 $help and die $Usage;
+defined($collection) or die "--collection is required.\n$Usage";
 
 my @pass_ids;
 if(defined($pass)) {
@@ -47,7 +50,7 @@ if(defined($pass)) {
     @pass_ids = map {chomp; $_;} IO::File->new($pass)->getlines();
 }
 
-my $image_dir = "$RealBin/../images";
+my $image_dir = "$RealBin/../images/$collection";
 -d $image_dir or die "$image_dir not found.";
 chdir($image_dir) or die "chdir($image_dir): $!";
 my $orig_dir = "$image_dir/orig";
@@ -107,8 +110,8 @@ foreach my $image (@files) {
     }
 
     my $slide = {
-	image => "images/$target_filename",
-	thumb => "images/thumbs/tn_$target_filename",
+	image => "images/$collection/$target_filename",
+	thumb => "images/$collection/thumbs/tn_$target_filename",
 	orig => $image,
 	active => 1,
     };

@@ -12,41 +12,13 @@ jQuery(function($){
 
     $(document).ready(function() {
 	$("#slidebuy").hide();
-	$("#slidefb").hide();
-	
-
-	var query = URI(location).search(true);
-	$.getJSON('pick/rest.cgi', function(slides_data) {
-            var slides = $.grep(slides_data.slides, function(o,i) {
-		if(o.active) {
-		    if("t" in query) {
-			if("tags" in o && o.tags.length > 0) {
-			    if(typeof(query.t) === 'string') {
-				if($.inArray(query.t, o.tags) >= 0) {
-				    return true;
-				} else {
-				    return false;
-				}
-			    } else {
-				var retval = true;
-				$.each(query.t, function(k,v) {
-				    retval = retval && $.inArray(v, o.tags) >= 0;
-				});
-				return retval;
-			    }
-			} else {
-			    return false;
-			}
-		    } else {
-			return true;
-		    }
-		} else {
-		    return false;
-		}
-	    });
-
+	$("#slidefb").hide();	
+	var my_uri = URI(location.href);
+	var rest_uri = URI("rest.cgi"+my_uri.path());
+	rest_uri.search({ active: 1 });
+	$.getJSON(rest_uri.href(), function(slides_data) {
 	    $('head > title').text(slides_data.title);
-
+	    var slides = slides_data.slides;
 	    var index_hash = {};
 	    var i = 1;
 	    slides.forEach(function(slide) {
@@ -93,7 +65,9 @@ jQuery(function($){
                 mouse_scrub:          0
             });
 	    function initialize_slide(slide) {
-		location.hash = '#'+slide.image.replace(/^images\//, '');
+		var new_location = URI(location.href);
+		new_location.hash(slide.image.replace(/^images\//, ''));
+		location.replace(new_location.href());
 		if("buy_url" in slide) {
 		    $("#slidebuy a").attr('href', slide.buy_url);
 		    $("#slidebuy").show();

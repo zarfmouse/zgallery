@@ -2,9 +2,10 @@ jQuery(function($){
     $(document).ready(function() {
 	var password = prompt("Password?");
 	var changes = false;
-	$.getJSON("rest.cgi", function(slides_data) {
+	var my_uri = URI(location.href);
+	var rest_uri = URI("../rest.cgi"+my_uri.path());
+	$.getJSON(rest_uri.href(), function(slides_data) {
 	    var slides = slides_data.slides;
-	    slides_data.password = password;
 	    $('head > title').text("Picker for "+slides_data.title);
 	    $.each(slides,function(k,v) {
 		var el = $(Mustache.render('<li><img title="{{image}}" src="../{{thumb}}" class="thumb" /><span class="spinner"><i class="fa fa-spinner fa-pulse"></i></span></li>', v));
@@ -32,7 +33,9 @@ jQuery(function($){
 		    afterTagRemoved: store_tags,
 		    autocomplete: {
 			source: function(request, response) {
-			    $.getJSON("rest.cgi?mode=tags&q="+encodeURI(request.term), function(data) {
+			    rest_uri.search({mode: 'tags', 
+					     q: request.term});
+			    $.getJSON(rest_uri.href(), function(data) {
 				response(data);
 			    })
 			}
@@ -57,11 +60,14 @@ jQuery(function($){
 		}
 		    
 		var i = $(this).parents("#picker > li").data("index");
-		var url = "rest.cgi?mode=rotate&direction="+dir+"&index="+i+"&password="+password;
+		rest_uri.search({mode: 'rotate',
+				 direction: dir,
+				 index: i,
+				 password: password});
 		var img = $(this).parents("#picker > li").children("img.thumb");
 		var spinner = $(this).parents("#picker > li").children('.spinner');
 		spinner.show();
-		$.ajax(url, 
+		$.ajax(rest_uri.href(), 
 		       {type: 'GET',
 			success: function() {
 			    var src = img.attr('src').split("?", 1);
@@ -105,7 +111,8 @@ jQuery(function($){
 		if(changes && !running) {
 		    changes = false;
 		    running = true;
-		    $.ajax("rest.cgi", 
+		    rest_uri.search({password: password});
+		    $.ajax(rest_uri.href(), 
 			   {data: JSON.stringify(slides_data),
 			    type: 'POST',
 			    contentType: 'application/json',
