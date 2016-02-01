@@ -10,15 +10,39 @@ jQuery(function($){
         })
     }
 
+    function shuffle(array) {
+	var currentIndex = array.length, temporaryValue, randomIndex;
+	while (0 !== currentIndex) {
+	    randomIndex = Math.floor(Math.random() * currentIndex);
+	    currentIndex -= 1;
+	    temporaryValue = array[currentIndex];
+	    array[currentIndex] = array[randomIndex];
+	    array[randomIndex] = temporaryValue;
+	}
+	return array;
+    }
+
     $(document).ready(function() {
 	$("#slidebuy").hide();
-	$("#slidefb").hide();	
+	$("#slidefb").hide();
 	var my_uri = URI(location.href);
+	var my_search = my_uri.search(true);
 	var rest_uri = URI("rest.cgi"+my_uri.path());
 	rest_uri.search({ active: 1 });
 	$.getJSON(rest_uri.href(), function(slides_data) {
 	    $('head > title').text(slides_data.title);
 	    var slides = slides_data.slides;
+	    if(my_search.random) {
+		$("#slide-shuffle").addClass("active");
+		var unshuffle_uri = URI(my_uri.href());
+		unshuffle_uri.removeSearch("random");
+		$("#slide-shuffle a").attr('href', unshuffle_uri.href());
+		shuffle(slides);
+	    }  else {
+		var shuffle_uri = URI(my_uri.href());
+		shuffle_uri.addSearch("random", 1);
+		$("#slide-shuffle a").attr('href', shuffle_uri.href());
+	    }
 	    var index_hash = {};
 	    var i = 1;
 	    slides.forEach(function(slide) {
@@ -36,9 +60,10 @@ jQuery(function($){
 		return 1;
 	    }
 
+	    var autoplay = my_search.pause ? 0 : 1;
             $.supersized({
                 slideshow:            1,      // Slideshow on/off
-                autoplay:             1,      // Slideshow starts playing automatically
+                autoplay:             autoplay,      // Slideshow starts playing automatically
                 start_slide:          parse_hash(), // Start slide (0 is random)
                 stop_loop:            0,      // Pauses slideshow on last slide
                 random:               0,      // Randomize slide order (Ignores start slide)
