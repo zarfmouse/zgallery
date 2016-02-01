@@ -71,7 +71,7 @@ foreach my $photo (@{$fb_data->{photos}}) {
     my $thumb_file = "$thumb_dir/tn_$target_filename";
     my $image_file = "$image_dir/$target_filename";
     my $slide = {
-	active => 0,
+	active => 1,
 	image => $image_file,
 	thumb => $thumb_file,
 	orig => $orig_file,
