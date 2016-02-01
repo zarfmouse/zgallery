@@ -25,6 +25,8 @@ jQuery(function($){
     $(document).ready(function() {
 	$("#slidebuy").hide();
 	$("#slidefb").hide();
+	$("#slide-fullscreen").hide();
+	$("#slide-shuffle").hide();
 	var my_uri = URI(location.href);
 	var my_search = my_uri.search(true);
 	var rest_uri = URI("rest.cgi"+my_uri.path());
@@ -43,6 +45,8 @@ jQuery(function($){
 		shuffle_uri.addSearch("random", 1);
 		$("#slide-shuffle a").attr('href', shuffle_uri.href());
 	    }
+	    $("#slide-shuffle").show();
+
 	    var index_hash = {};
 	    var i = 1;
 	    slides.forEach(function(slide) {
@@ -106,6 +110,17 @@ jQuery(function($){
 		} else {
 		    $("#slidefb").hide();
 		}		
+		if("orig" in slide) {
+		    $("#slide-download a").attr('href', slide.orig);
+		    $("#slide-download").show();
+		} else {
+		    $("#slide-download").hide();
+		}	
+
+		if(top.location != self.location) {
+		    $("#slide-fullscreen a").attr('href', self.location.href);
+		    $("#slide-fullscreen").show();
+		} 
 	    }
 	    initialize_slide(slides[vars.current_slide]);	    
 	    $(window).on('hashchange', function() {
