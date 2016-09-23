@@ -21,6 +21,7 @@ my $title;
 my $collection;
 my $slug;
 my $no_slug = 0;
+my $update = 0;
 GetOptions(
     "help" => \$help,
     "verbose" => \$VERBOSE,
@@ -30,12 +31,12 @@ GetOptions(
     "collection=s" => \$collection,
     "slug=s" => \$slug,
     "no-slug" => \$no_slug,
+    "update" => \$update,
     );
-my $json_file = shift;
 
 my $Usage = <<"USAGE";
 $0 [--help]
-$0 [--verbose] [--dry-run] [--credit=STR] [--title=STR] --collection=STR [--slug=STR | --no-slug] 
+$0 [--verbose] [--dry-run] [--credit=STR] [--title=STR] --collection=STR [--slug=STR | --no-slug] [--update]
 USAGE
     ;
 
@@ -53,12 +54,26 @@ dir($thumb_dir);
 
 my $slides_file = "$image_dir/slides.storable";
 my $slides = { slides => [] };
+if(-f $slides_file) {
+    if($update) {
+	$slides = lock_retrieve($slides_file);
+    } else {
+	die "$slides_file already exists!\n";
+    }
+}
+
 if(defined($title)) {
     $slides->{title} = $title;
 }
 
 my $i=0;
-foreach my $orig_file (glob("$orig_dir/*")) {
+
+ORIG_FILE: foreach my $orig_file (glob("$orig_dir/*")) {
+    if($update) {
+	foreach my $slide (@{$slides->{slides}}) {
+	    next ORIG_FILE if($slide->{orig} eq $orig_file);
+	}
+    }
     my $target_filename = $no_slug ? basename($orig_file) : "$slug-".sprintf("%04i", ++$i).".jpg";
     my $thumb_file = "$thumb_dir/tn_$target_filename";
     my $image_file = "$image_dir/$target_filename";
