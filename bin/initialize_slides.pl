@@ -22,6 +22,7 @@ my $collection;
 my $slug;
 my $no_slug = 0;
 my $update = 0;
+my $force = 0;
 GetOptions(
     "help" => \$help,
     "verbose" => \$VERBOSE,
@@ -32,6 +33,7 @@ GetOptions(
     "slug=s" => \$slug,
     "no-slug" => \$no_slug,
     "update" => \$update,
+    "force" => \$force,
     );
 
 my $Usage = <<"USAGE";
@@ -68,26 +70,39 @@ if(defined($title)) {
 
 my $i=0;
 
-ORIG_FILE: foreach my $orig_file (glob("$orig_dir/*")) {
-    if($update) {
-	foreach my $slide (@{$slides->{slides}}) {
-	    next ORIG_FILE if($slide->{orig} eq $orig_file);
-	}
-    }
+foreach my $orig_file (glob("$orig_dir/*")) {
+    chmod(0644, $orig_file);
     my $target_filename = $no_slug ? basename($orig_file) : "$slug-".sprintf("%04i", ++$i).".jpg";
     my $thumb_file = "$thumb_dir/tn_$target_filename";
     my $image_file = "$image_dir/$target_filename";
-    my $slide = {
-	active => 1,
-	image => $image_file,
-	thumb => $thumb_file,
-	orig => $orig_file,
-	title => "Credit: $credit",
-    };
-    push(@{$slides->{slides}}, $slide);
+    my $slide;
+    if($update) {
+	foreach my $existing_slide (@{$slides->{slides}}) {
+	    if($existing_slide->{orig} eq $orig_file) {
+		$slide = $existing_slide;
+	    }
+	}
+    }
+    unless(defined($slide)) {
+	$slide = {
+	    active => 1,
+	    image => $image_file,
+	    thumb => $thumb_file,
+	    orig => $orig_file,
+	    title => "Credit: $credit",
+	};
+	push(@{$slides->{slides}}, $slide);
+    }
 
-    cmd("convert -geometry '1500x1500>' '$orig_file' '$image_file'");
-    cmd("convert -geometry 200x200^ -gravity Center -crop 200x150+0+0 +repage '$orig_file' '$thumb_file'");
+    if($force or not -f $image_file) {
+	cmd("convert -geometry '1500x1500>' '$orig_file' '$image_file'");
+    }
+    chmod(0644, $image_file) or die("chmod($image_file): $!");
+
+    if($force or not -f $thumb_file) {
+	cmd("convert -geometry 200x200^ -gravity Center -crop 200x150+0+0 +repage '$orig_file' '$thumb_file'");
+    }
+    chmod(0644, $thumb_file) or die("chmod($thumb_file): $!");
 }
 $DRY_RUN or lock_store($slides => $slides_file);
 
@@ -96,6 +111,7 @@ sub dir {
     print "mkdir($dir)\n" if $VERBOSE;
     return if $DRY_RUN;
     -d $dir or mkdir($dir) or die("mkdir($dir): $!");
+    chmod(0755, $dir) or die("chmod($dir): $!");
 }
 
 sub cmd {
