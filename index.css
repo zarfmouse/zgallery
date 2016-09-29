@@ -5,5 +5,8 @@ ul#slideicons li a,#slideicons ul li a:link,#slideicons ul li a:visited { color:
 li#slide-shuffle.active a {
     color: green;
 }
-
+#slidecaption a {
+    color: white;
+    text-decoration: none;
+}
 
