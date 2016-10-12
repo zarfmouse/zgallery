@@ -11,6 +11,11 @@ RewriteRule . index.html
   Deny from all
 </Files>
 
+<Files ".admin_password">
+  Order Allow,Deny
+  Deny from all
+</Files>
+
 <Files "LICENSE">
   Order Allow,Deny
   Deny from all

@@ -19,10 +19,11 @@ use Storable qw(lock_store lock_retrieve);
 use IO::File;
 use Fcntl qw(:flock);
 use File::Basename qw(basename);
+use IO::File;
 
 my $lock_handle;
 my $lock_file = "$RealBin/images/.lock";
-my $password = 'changeme';
+my $password = IO::File->new("$RealBin/.admin_password")->getline();
 my $images_dir = "$RealBin/images";
 
 my $cgi = CGI->new();
@@ -40,6 +41,9 @@ eval {
 	} elsif($part =~ m/^[a-zA-Z0-9-_\.]+$/ and -d "$images_dir/$part") {
 	    $collection = $part;
 	}
+    }
+    unless(defined($collection)) {
+	$collection = '-';
     }
 
     my $mode = $cgi->param('mode');
@@ -129,7 +133,10 @@ sub retrieve_data {
     my $all_data = { slides => [] };
     my @collections;
     if($collection eq '-') {
-	@collections = glob("$images_dir/*");
+	@collections = map  { $_->[0] } 
+	               sort { $a->[1] <=> $b->[1] } 
+                       map { [$_, -M $_] } 
+                       glob("$images_dir/*");
 	$all_data->{title} = "$title_tags - Photos";
     } else {
 	@collections = ("$images_dir/$collection");
@@ -137,7 +144,7 @@ sub retrieve_data {
     foreach my $collection_dir (@collections) {
 	my $collection = basename($collection_dir);
 	my $data_file = "$collection_dir/slides.storable";
-	die "Missing slides data." unless -f $data_file;
+	die "Missing slides data for $collection." unless -f $data_file;
 	my $data = lock_retrieve($data_file);
 	if(scalar(@collections) == 1) {
 	    if(scalar(@tags) > 0) {
