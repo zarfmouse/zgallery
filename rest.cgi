@@ -20,11 +20,22 @@ use IO::File;
 use Fcntl qw(:flock);
 use File::Basename qw(basename);
 use IO::File;
+use Digest::SHA1 qw(sha1_hex);
 
 my $lock_handle;
 my $lock_file = "$RealBin/images/.lock";
-my $password = IO::File->new("$RealBin/.admin_password")->getline();
 my $images_dir = "$RealBin/images";
+
+sub check_password {
+    my $password = shift;
+    my $file = "$RealBin/.admin_password";
+    -f $file or die "You must run bin/set_password.pl to secure the rest endpoint";
+    my $password_data = lock_retrieve($file);
+    my $hash = $password_data->{hash};
+    my $salt = $password_data->{salt};
+    (defined($hash) and defined($salt)) or die "Invalid admin_password data.";
+    return sha1_hex($salt, $password) eq $hash;
+}
 
 my $cgi = CGI->new();
 
@@ -88,6 +99,15 @@ eval {
 	system("convert -geometry 200x200^ -gravity Center -crop 200x150+0+0 +repage '$image_file' '$thumb_file'");
 	print $cgi->header("appliation/json");
 	print encode_json({ ok => $orig_file });	
+    } elsif($mode eq 'check_auth') {
+	if(check_password($cgi->url_param('password'))) {
+	    print $cgi->header("appliation/json");
+	    print encode_json({ ok => 1 });
+	} else {
+	    print $cgi->header(-status => '403 Forbidden', 
+			       -type => "application/json");
+	    print encode_json({err => "Invalid Password"});
+	}
     } elsif($cgi->param("POSTDATA")) {
 	die "Invalid collection" unless defined($collection);
 	die "Invalid collection" unless $collection ne '-';
@@ -179,7 +199,7 @@ sub read_lock {
 }
 
 sub write_lock {
-    if($cgi->url_param('password') eq $password) {
+    if(check_password($cgi->url_param('password'))) {
 	$lock_handle = IO::File->new(">>$lock_file");
 	defined($lock_handle) or die "open($lock_file): $!";
 	flock($lock_handle, LOCK_EX) or die "Lock failed.";

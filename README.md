@@ -19,7 +19,7 @@ git clone https://github.com/zarfmouse/zcme-lib-perl.git
 
 ```
 cd $DOCROOT/photos
-echo SOME_RANDOM_PASSWORD > .admin_password
+bin/set_password.pl
 ```
 
 ## Initialize the images directory.
