@@ -11,6 +11,8 @@ git clone https://github.com/buildinternet/supersized.git
 cd pick
 git clone https://github.com/janl/mustache.js.git
 git clone https://github.com/aehlke/tag-it.git
+cd ../bin
+git clone https://github.com/zarfmouse/zcme-lib-perl.git
 ```
 
 ## Secure the REST endpoint
