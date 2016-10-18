@@ -55,6 +55,7 @@
     position: relative;
     top: -35px;
     background-color: rgba(128, 128, 128, 0.5);
+    text-align: center;
 }
 
 #picker > li > ul.controls > li {
@@ -70,7 +71,7 @@
 }
 
 #picker > li > ul.controls > li:hover,
-#toggle-all-tags:hover {
+ul#global-controls > li:hover {
     cursor: pointer;
     text-shadow: 2px 2px #bbbbbb;
 }
@@ -79,14 +80,16 @@
     float: right;
 }
 
+#picker > li > ul.controls > li.rotate.left {
+    float: left;
+}
+
 #picker > li > ul.controls > li.checked {
     display: none;
-    margin-left: 64px;
 }
 
 #picker > li > ul.controls > li.unchecked {
     display: inline-block;
-    margin-left: 64px;
 }
 
 #picker > li.picked > ul.controls > li.checked {
@@ -109,12 +112,29 @@
     display: block;
 }
 
+#picker > li > .title {
+    position: absolute;
+    bottom: 35px;
+    left: 0;
+    width: 100%;
+    font-size: 10px;
+    display: none;
+}
+
+#picker > li > .title.visible {
+    display: block;
+}
+
 .tagit-autocomplete .ui-menu-item {
     font-size: 8px;
 }
 
-#toggle-all-tags {
+ul#global-controls {
     position: fixed; 
     top: 5px;
     right: 5px;
+}
+
+ul#global-controls > li {
+    display: block;
 }

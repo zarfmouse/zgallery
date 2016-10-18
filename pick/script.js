@@ -42,7 +42,10 @@ jQuery(function($){
 		    }
 		});
 		el.append(tags);
-		el.append($('<ul class="controls"><li class="rotate left"><i class="fa fa-rotate-left" /></li><li class="checked"><i class="fa fa-check-square-o" /></li><li class="unchecked"><i class="fa fa-square-o" /></li><li class="tag-toggle"><i class="fa fa-tag" /></li><li class="rotate right"><i class="fa fa-rotate-right" /></li></ul>'));
+		var title = $(Mustache.render('<input type="text" name="title" class="title" value="{{title}}" />', { title: v.title }));
+		el.append(title);
+
+		el.append($('<ul class="controls"><li class="rotate left"><i class="fa fa-rotate-left" /></li><li class="checked"><i class="fa fa-check-square-o" /></li><li class="unchecked"><i class="fa fa-square-o" /></li><li class="tag-toggle"><i class="fa fa-tag" /></li><li class="title-toggle"><i class="fa fa-info-circle" /></li><li class="rotate right"><i class="fa fa-rotate-right" /></li></ul>'));
 		$('#picker').append(el);
 		$('.spinner').hide();
 	    });
@@ -62,6 +65,11 @@ jQuery(function($){
 	    $('#picker > li .controls .tag-toggle').click(function(ev) {
 		ev.stopPropagation();
 		$(this).parents("#picker > li").children(".tags").toggleClass('visible');
+	    });
+
+	    $('#picker > li .controls .title-toggle').click(function(ev) {
+		ev.stopPropagation();
+		$(this).parents("#picker > li").children(".title").toggleClass('visible');
 	    });
 
 	    $('#picker > li .rotate').click(function(ev) {
@@ -90,8 +98,7 @@ jQuery(function($){
 	    });
 
 	    $('#picker > li').click(function(ev) {
-		var tags = $(this).children(".tags");
-		if($(ev.target).parents(".tags").length == 0) {
+		if($(ev.target).hasClass('thumb') || $(ev.target).parents().hasClass('checked') || $(ev.target).parents().hasClass('unchecked')) {
 		    $(this).toggleClass('picked');
 		    if($(this).hasClass('picked')) {
 			slides_data.slides[$(this).data("index")].active = 1;
@@ -103,18 +110,37 @@ jQuery(function($){
 		return false;
 	    });
 
-	    $('#picker li').dblclick(function(ev) {
-		window.open($(this).data("fullsize"), '_blank');
+	    $('#picker > li > .title').change(function(ev) {
+		var i = $(this).parents("#picker > li").data("index");
+		slides_data.slides[i].title = $(this).val();
+		changes = true;
 	    });
 
-	    var show_all = true;
+	    $('#picker > li').dblclick(function(ev) {
+		if($(ev.target).hasClass('thumb')) {
+		    window.open($(this).data("fullsize"), '_blank');
+		}
+	    });
+
+	    var show_all_tags = true;
 	    $("#toggle-all-tags").click(function(ev) {
-		if(show_all) {
+		if(show_all_tags) {
 		    $(".tags").addClass('visible');
-		    show_all = false;
+		    show_all_tags = false;
 		} else {
 		    $(".tags").removeClass('visible');
-		    show_all = true;
+		    show_all_tags = true;
+		}
+	    });
+
+	    var show_all_titles = true;
+	    $("#toggle-all-titles").click(function(ev) {
+		if(show_all_titles) {
+		    $("#picker > li > .title").addClass('visible');
+		    show_all_titles = false;
+		} else {
+		    $("#picker > li > .title").removeClass('visible');
+		    show_all_titles = true;
 		}
 	    });
 
