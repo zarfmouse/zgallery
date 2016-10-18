@@ -23,6 +23,7 @@ my $slug;
 my $no_slug = 0;
 my $update = 0;
 my $force = 0;
+my $sort;
 GetOptions(
     "help" => \$help,
     "verbose" => \$VERBOSE,
@@ -34,16 +35,20 @@ GetOptions(
     "no-slug" => \$no_slug,
     "update" => \$update,
     "force" => \$force,
+    "sort=s" => \$sort,
     );
 
 my $Usage = <<"USAGE";
 $0 [--help]
-$0 [--verbose] [--dry-run] [--credit=STR] [--title=STR] --collection=STR [--slug=STR | --no-slug] [--update]
+$0 [--verbose] [--dry-run] [--credit=STR] [--title=STR] --collection=STR [--slug=STR | --no-slug] [--update] [--sort=time]
 USAGE
     ;
 
 $help and die $Usage;
 defined($collection) or die "--collection is required.\n$Usage";
+if(defined($sort)) {
+    $sort eq 'time' or die "--sort=time is the only supported sort\n$Usage";
+}
 defined($slug) or $slug = $collection;
 
 chdir("$RealBin/..") or die "chdir($RealBin/..): $!";
@@ -80,10 +85,14 @@ foreach my $orig_file (glob("$orig_dir/*")) {
 	foreach my $existing_slide (@{$slides->{slides}}) {
 	    if($existing_slide->{orig} eq $orig_file) {
 		$slide = $existing_slide;
+		last;
 	    }
 	}
     }
-    unless(defined($slide)) {
+    if(defined($slide)) {
+	$image_file = $slide->{image};
+	$thumb_file = $slide->{thumb};
+    } else {
 	$slide = {
 	    active => 1,
 	    image => $image_file,
@@ -103,7 +112,25 @@ foreach my $orig_file (glob("$orig_dir/*")) {
 	cmd("convert -geometry 200x200^ -gravity Center -crop 200x150+0+0 +repage '$orig_file' '$thumb_file'");
     }
     chmod(0644, $thumb_file) or die("chmod($thumb_file): $!");
+
+    if($force or not defined($slide->{datetime_original})) {
+	my (undef,$datetime) = split(/=/,`identify -format "%[EXIF:*]" '$orig_file'  | grep exif:DateTimeOriginal`);
+	chomp($datetime);
+	print "$orig_file is from $datetime\n" if $VERBOSE;
+	$slide->{datetime_original} = $datetime;
+    }
 }
+
+if(defined($sort)) {
+    if($sort eq 'time') {
+	print "Sorting by datetime_original...\n";
+	@{$slides->{slides}} = sort {$a->{datetime_original} cmp $b->{datetime_original}} @{$slides->{slides}};
+    } else {
+	die "Unsupported sort $sort.\n";
+    }
+}
+
+$VERBOSE and print Dumper($slides);
 $DRY_RUN or lock_store($slides => $slides_file);
 
 sub dir {

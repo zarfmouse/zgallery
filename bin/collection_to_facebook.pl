@@ -94,7 +94,7 @@ foreach my $slide (@{$slides_data->{slides}}) {
     $hash_key =~ s(^images/)();
     my $slide_url = "$url?pause=1#$hash_key";
     my $orig_url = "$base_url/$slide->{orig}";
-    my (undef,$datetime) = split(/=/,`identify -format "%[EXIF:*]" '$images_dir/../$slide->{orig}'  | grep exif:DateTimeOriginal`);
+    my $datetime = $slide->{datetime_original};
     my $caption = $slide->{title};
     $caption =~ s/\<[^>]*\>//g;
     print "Uploading $hash_key\n" if $VERBOSE;
