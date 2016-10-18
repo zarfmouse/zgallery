@@ -17,14 +17,10 @@ git clone https://github.com/zarfmouse/zcme-lib-perl.git
 
 ## Secure the REST endpoint
 
-You must edit the rest.cgi and find the line that defines the
-password. Change it from its default value to something else.
-
 ```
-my $password = 'changeme';
+cd $DOCROOT/photos
+echo SOME_RANDOM_PASSWORD > .admin_password
 ```
-
-TODO: Don't store the password in a git controlled file.
 
 ## Initialize the images directory.
 
