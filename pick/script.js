@@ -46,6 +46,18 @@ jQuery(function($){
 		$('#picker').append(el);
 		$('.spinner').hide();
 	    });
+	    $('#picker').sortable({
+		update: function(ev, ui) {
+		    var new_slides = [];
+		    $('#picker > li').each(function(i, el) {
+			var index = $(this).data("index");
+			new_slides.push(slides[index]);
+		    });
+		    slides_data.slides = slides = new_slides;
+		    changes = true;
+		}
+	    });
+	    $('#picker').disableSelection();
 
 	    $('#picker > li .controls .tag-toggle').click(function(ev) {
 		ev.stopPropagation();
